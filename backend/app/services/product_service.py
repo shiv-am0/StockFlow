@@ -1,5 +1,6 @@
 from decimal import Decimal
 
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.repositories.product_repository import ProductRepository
@@ -14,7 +15,10 @@ class ProductService:
     def create_product(self, data: ProductCreate):
         if self.repo.exists(sku=data.sku):
             raise ConflictError(f"Product with SKU '{data.sku}' already exists")
-        return self.repo.create(**data.model_dump())
+        try:
+            return self.repo.create(**data.model_dump())
+        except IntegrityError:
+            raise ConflictError(f"Product with SKU '{data.sku}' already exists")
 
     def get_product(self, product_id: int):
         product = self.repo.get_by_id(product_id)
@@ -32,10 +36,13 @@ class ProductService:
             raise NotFoundError("Product not found")
         if data.sku and data.sku != product.sku and self.repo.exists(sku=data.sku):
             raise ConflictError(f"Product with SKU '{data.sku}' already exists")
-        updated = self.repo.update(product_id, **data.model_dump())
-        if not updated:
-            raise NotFoundError("Product not found")
-        return updated
+        try:
+            updated = self.repo.update(product_id, **data.model_dump())
+            if not updated:
+                raise NotFoundError("Product not found")
+            return updated
+        except IntegrityError:
+            raise ConflictError(f"Product with SKU '{data.sku}' already exists")
 
     def delete_product(self, product_id: int):
         if not self.repo.get_by_id(product_id):

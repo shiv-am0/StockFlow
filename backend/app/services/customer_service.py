@@ -1,3 +1,4 @@
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.repositories.customer_repository import CustomerRepository
@@ -12,7 +13,12 @@ class CustomerService:
     def create_customer(self, data: CustomerCreate):
         if self.repo.exists(email=data.email):
             raise ConflictError(f"Customer with email '{data.email}' already exists")
-        return self.repo.create(**data.model_dump())
+        if data.phone_number and self.repo.exists(phone_number=data.phone_number):
+            raise ConflictError(f"Customer with phone '{data.phone_number}' already exists")
+        try:
+            return self.repo.create(**data.model_dump())
+        except IntegrityError:
+            raise ConflictError("Customer with this email or phone already exists")
 
     def get_customer(self, customer_id: int):
         customer = self.repo.get_by_id(customer_id)

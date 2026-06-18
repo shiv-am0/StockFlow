@@ -20,6 +20,16 @@ def test_create_customer_duplicate_email(client):
     assert response.status_code == 409
 
 
+def test_create_customer_duplicate_phone(client):
+    client.post("/api/v1/customers", json={
+        "full_name": "Alice", "email": "alice@example.com", "phone_number": "+1-555-0000",
+    })
+    response = client.post("/api/v1/customers", json={
+        "full_name": "Bob", "email": "bob@example.com", "phone_number": "+1-555-0000",
+    })
+    assert response.status_code == 409
+
+
 def test_create_customer_invalid_email(client):
     response = client.post("/api/v1/customers", json={
         "full_name": "John", "email": "not-an-email",
