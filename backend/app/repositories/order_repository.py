@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session, joinedload
 
 from app.models.order import Order
+from app.models.order_item import OrderItem
 from app.repositories.base import BaseRepository
 
 
@@ -11,7 +12,7 @@ class OrderRepository(BaseRepository[Order]):
     def get_by_id(self, id: int) -> Order | None:
         return (
             self.db.query(self.model)
-            .options(joinedload(self.model.customer), joinedload(self.model.order_items).joinedload("product"))
+            .options(joinedload(self.model.customer), joinedload(self.model.order_items).joinedload(OrderItem.product))
             .filter(self.model.id == id, self.model.is_deleted.is_(False))
             .first()
         )

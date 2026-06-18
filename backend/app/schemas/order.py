@@ -29,9 +29,6 @@ class OrderItemResponse(BaseModel):
     unit_price: Decimal
     subtotal: Decimal
 
-    class Config:
-        from_attributes = True
-
 
 class OrderResponse(BaseModel):
     id: int
@@ -41,9 +38,6 @@ class OrderResponse(BaseModel):
     status: str
     created_at: datetime
     items: list[OrderItemResponse]
-
-    class Config:
-        from_attributes = True
 
 
 class OrderListResponse(BaseModel):

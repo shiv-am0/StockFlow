@@ -6,8 +6,30 @@ from app.models.order import Order
 from app.models.order_item import OrderItem
 from app.models.product import Product
 from app.repositories.order_repository import OrderRepository
-from app.schemas.order import OrderCreate
+from app.schemas.order import OrderCreate, OrderItemResponse, OrderResponse
 from app.utils.exceptions import BadRequestError, NotFoundError
+
+
+def _build_order_response(order: Order) -> OrderResponse:
+    return OrderResponse(
+        id=order.id,
+        customer_id=order.customer_id,
+        customer_name=order.customer.full_name if order.customer else "Unknown",
+        total_amount=order.total_amount,
+        status=order.status,
+        created_at=order.created_at,
+        items=[
+            OrderItemResponse(
+                id=item.id,
+                product_id=item.product_id,
+                product_name=item.product.product_name if item.product else "Unknown",
+                quantity=item.quantity,
+                unit_price=item.unit_price,
+                subtotal=item.subtotal,
+            )
+            for item in (order.order_items or [])
+        ],
+    )
 
 
 class OrderService:
@@ -15,10 +37,14 @@ class OrderService:
         self.repo = OrderRepository(db)
         self.db = db
 
-    def create_order(self, data: OrderCreate):
+    def create_order(self, data: OrderCreate) -> OrderResponse:
         from app.models.customer import Customer
 
-        customer = self.db.query(Customer).filter(Customer.id == data.customer_id, Customer.is_deleted.is_(False)).first()
+        customer = (
+            self.db.query(Customer)
+            .filter(Customer.id == data.customer_id, Customer.is_deleted.is_(False))
+            .first()
+        )
         if not customer:
             raise NotFoundError("Customer not found")
 
@@ -29,7 +55,11 @@ class OrderService:
         total = Decimal("0.00")
 
         for item_data in data.items:
-            product = self.db.query(Product).filter(Product.id == item_data.product_id, Product.is_deleted.is_(False)).first()
+            product = (
+                self.db.query(Product)
+                .filter(Product.id == item_data.product_id, Product.is_deleted.is_(False))
+                .first()
+            )
             if not product:
                 self.db.rollback()
                 raise NotFoundError(f"Product with id {item_data.product_id} not found")
@@ -59,23 +89,24 @@ class OrderService:
         order.total_amount = total
         self.db.commit()
         self.db.refresh(order)
-        return self.repo.get_by_id(order.id)
+        full_order = self.repo.get_by_id(order.id)
+        return _build_order_response(full_order)
 
-    def get_order(self, order_id: int):
+    def get_order(self, order_id: int) -> OrderResponse:
         order = self.repo.get_by_id(order_id)
         if not order:
             raise NotFoundError("Order not found")
-        return order
+        return _build_order_response(order)
 
-    def get_orders(self, skip: int = 0, limit: int = 100):
+    def get_orders(self, skip: int = 0, limit: int = 100) -> tuple[list[OrderResponse], int]:
         items, total = self.repo.get_all(skip=skip, limit=limit)
-        return items, total
+        return [_build_order_response(o) for o in items], total
 
-    def delete_order(self, order_id: int):
+    def delete_order(self, order_id: int) -> bool:
         if not self.repo.get_by_id(order_id):
             raise NotFoundError("Order not found")
         return self.repo.soft_delete(order_id)
 
-    def get_dashboard_stats(self):
+    def get_dashboard_stats(self) -> dict:
         total_orders = self.repo.get_total_count()
         return {"total_orders": total_orders}

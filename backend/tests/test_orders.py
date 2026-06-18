@@ -11,7 +11,7 @@ def test_create_order(client):
     })
     assert response.status_code == 201
     data = response.json()
-    assert data["total_amount"] == 75.0
+    assert float(data["total_amount"]) == 75.0
     assert data["status"] == "pending"
     assert len(data["items"]) == 1
 

@@ -9,7 +9,7 @@ def test_create_product(client):
     data = response.json()
     assert data["product_name"] == "Test Product"
     assert data["sku"] == "TP-001"
-    assert data["price"] == 19.99
+    assert float(data["price"]) == 19.99
     assert data["quantity_in_stock"] == 50
     assert "id" in data
 
