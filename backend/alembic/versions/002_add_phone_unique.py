@@ -18,6 +18,19 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
+    op.execute(
+        """
+        UPDATE customers
+        SET phone_number = NULL
+        WHERE phone_number IN (
+            SELECT phone_number
+            FROM customers
+            WHERE phone_number IS NOT NULL
+            GROUP BY phone_number
+            HAVING COUNT(*) > 1
+        )
+        """
+    )
     op.create_unique_constraint("uq_customers_phone_number", "customers", ["phone_number"])
 
 
