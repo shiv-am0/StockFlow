@@ -45,6 +45,9 @@ export default function Customers() {
     if (!form.full_name.trim()) e.full_name = 'Full name is required'
     if (!form.email.trim()) e.email = 'Email is required'
     else if (!/\S+@\S+\.\S+/.test(form.email)) e.email = 'Invalid email format'
+    if (form.phone_number && !/^\+?[0-9]{10,15}$/.test(form.phone_number)) {
+      e.phone_number = 'Phone must be 10-15 digits, optionally starting with +'
+    }
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -173,10 +176,11 @@ export default function Customers() {
           <div className="form-group">
             <label>Phone Number</label>
             <input
-              className="form-control"
+              className={`form-control ${errors.phone_number ? 'error' : ''}`}
               value={form.phone_number}
               onChange={(e) => setForm({ ...form, phone_number: e.target.value })}
             />
+            {errors.phone_number && <p className="error-text">{errors.phone_number}</p>}
           </div>
         </Modal>
       )}

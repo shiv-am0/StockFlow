@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.database.session import get_db
-from app.schemas.order import OrderCreate, OrderListResponse, OrderResponse
+from app.schemas.order import OrderCreate, OrderListResponse, OrderResponse, OrderStatusUpdate
 from app.schemas.common import SuccessResponse
 from app.services.order_service import OrderService
 
@@ -37,6 +37,16 @@ def list_orders(
 def get_order(order_id: int, db: Session = Depends(get_db)):
     service = OrderService(db)
     return service.get_order(order_id)
+
+
+@router.patch("/{order_id}/status", response_model=OrderResponse)
+def update_order_status(
+    order_id: int,
+    data: OrderStatusUpdate,
+    db: Session = Depends(get_db),
+):
+    service = OrderService(db)
+    return service.update_order_status(order_id, data.status)
 
 
 @router.delete("/{order_id}", response_model=SuccessResponse)

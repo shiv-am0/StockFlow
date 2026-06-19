@@ -170,7 +170,11 @@ export default function Orders() {
                     </td>
                     <td>{o.customer_name}</td>
                     <td>${Number(o.total_amount).toFixed(2)}</td>
-                    <td><span className="badge badge-success">{o.status}</span></td>
+                    <td>
+                      <span className={`badge ${o.status === 'delivered' ? 'badge-success' : o.status === 'cancelled' ? 'badge-danger' : 'badge-warning'}`}>
+                        {o.status}
+                      </span>
+                    </td>
                     <td>{formatDate(o.created_at)}</td>
                     <td style={{ textAlign: 'right' }}>
                       <Link to={`/orders/${o.id}`} className="btn btn-sm btn-secondary" style={{ marginRight: 6 }}>View</Link>

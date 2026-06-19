@@ -61,6 +61,7 @@ export default function Products() {
     const e = {}
     if (!form.product_name.trim()) e.product_name = 'Product name is required'
     if (!form.sku.trim()) e.sku = 'SKU is required'
+    else if (!/^[a-zA-Z0-9]+$/.test(form.sku)) e.sku = 'SKU must be alphanumeric only'
     if (!form.price || Number(form.price) <= 0) e.price = 'Price must be positive'
     if (form.quantity_in_stock === '' || Number(form.quantity_in_stock) < 0) e.quantity_in_stock = 'Quantity cannot be negative'
     setErrors(e)

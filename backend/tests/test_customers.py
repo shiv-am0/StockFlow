@@ -2,7 +2,7 @@ def test_create_customer(client):
     response = client.post("/api/v1/customers", json={
         "full_name": "John Doe",
         "email": "john@example.com",
-        "phone_number": "+1-555-1234",
+        "phone_number": "+1555123456",
     })
     assert response.status_code == 201
     data = response.json()
@@ -22,10 +22,10 @@ def test_create_customer_duplicate_email(client):
 
 def test_create_customer_duplicate_phone(client):
     client.post("/api/v1/customers", json={
-        "full_name": "Alice", "email": "alice@example.com", "phone_number": "+1-555-0000",
+        "full_name": "Alice", "email": "alice@example.com", "phone_number": "+1555000000",
     })
     response = client.post("/api/v1/customers", json={
-        "full_name": "Bob", "email": "bob@example.com", "phone_number": "+1-555-0000",
+        "full_name": "Bob", "email": "bob@example.com", "phone_number": "+1555000000",
     })
     assert response.status_code == 409
 

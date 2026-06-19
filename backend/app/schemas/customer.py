@@ -7,15 +7,18 @@ from pydantic import BaseModel, Field, EmailStr
 class CustomerBase(BaseModel):
     full_name: str = Field(..., min_length=1, max_length=255, examples=["John Doe"])
     email: EmailStr = Field(..., examples=["john@example.com"])
-    phone_number: Optional[str] = Field(None, max_length=50, examples=["+1-555-1234"])
+    phone_number: Optional[str] = Field(None, pattern=r'^\+?[0-9]{10,15}$', examples=["+1234567890"])
 
 
 class CustomerCreate(CustomerBase):
     pass
 
 
-class CustomerResponse(CustomerBase):
+class CustomerResponse(BaseModel):
     id: int
+    full_name: str
+    email: EmailStr
+    phone_number: Optional[str] = None
     created_at: datetime
 
     class Config:

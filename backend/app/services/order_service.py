@@ -102,6 +102,32 @@ class OrderService:
         items, total = self.repo.get_all(skip=skip, limit=limit)
         return [_build_order_response(o) for o in items], total
 
+    def update_order_status(self, order_id: int, new_status: str) -> OrderResponse:
+        order = self.repo.get_by_id(order_id)
+        if not order:
+            raise NotFoundError("Order not found")
+
+        if order.status != "pending":
+            raise BadRequestError(
+                f"Cannot change status from '{order.status}'. Only pending orders can be updated."
+            )
+
+        if new_status == "cancelled":
+            for item in order.order_items:
+                product = (
+                    self.db.query(Product)
+                    .filter(Product.id == item.product_id)
+                    .first()
+                )
+                if product:
+                    product.quantity_in_stock += item.quantity
+
+        order.status = new_status
+        self.db.commit()
+        self.db.refresh(order)
+        full_order = self.repo.get_by_id(order.id)
+        return _build_order_response(full_order)
+
     def delete_order(self, order_id: int) -> bool:
         if not self.repo.get_by_id(order_id):
             raise NotFoundError("Order not found")

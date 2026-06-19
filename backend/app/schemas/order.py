@@ -1,6 +1,6 @@
 from datetime import datetime
 from decimal import Decimal
-from typing import Optional
+from typing import Literal, Optional
 
 from pydantic import BaseModel, Field, model_validator
 
@@ -38,6 +38,10 @@ class OrderResponse(BaseModel):
     status: str
     created_at: datetime
     items: list[OrderItemResponse]
+
+
+class OrderStatusUpdate(BaseModel):
+    status: Literal["delivered", "cancelled"]
 
 
 class OrderListResponse(BaseModel):
