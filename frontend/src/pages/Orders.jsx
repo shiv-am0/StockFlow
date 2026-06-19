@@ -224,41 +224,44 @@ export default function Orders() {
             </div>
 
             {orderItems.map((item, idx) => (
-              <div key={idx} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: 10 }}>
-                <div style={{ flex: 1 }}>
-                  <select
-                    className="form-control"
-                    value={item.product_id}
-                    onChange={(e) => updateItem(idx, 'product_id', e.target.value)}
-                  >
-                    <option value="">Select product...</option>
-                    {products.map((p) => (
-                      <option key={p.id} value={p.id} disabled={p.quantity_in_stock === 0}>
-                        {p.product_name} (${Number(p.price).toFixed(2)}) — Stock: {p.quantity_in_stock}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div style={{ width: 100 }}>
-                  <input
-                    type="number"
-                    className="form-control"
-                    placeholder="Qty"
-                    min="1"
-                    value={item.quantity}
-                    onChange={(e) => updateItem(idx, 'quantity', e.target.value)}
-                  />
-                </div>
-                {item.product_id && item.quantity && (
-                  <div style={{ width: 80, padding: '9px 0', textAlign: 'right', fontWeight: 600, color: 'var(--gray-700)', fontSize: 14 }}>
-                    ${(getUnitPrice(item.product_id) * Number(item.quantity)).toFixed(2)}
+              <div key={idx}>
+                <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: 4 }}>
+                  <div style={{ flex: 1 }}>
+                    <select
+                      className={`form-control ${errors[`item_${idx}`] ? 'error' : ''}`}
+                      value={item.product_id}
+                      onChange={(e) => updateItem(idx, 'product_id', e.target.value)}
+                    >
+                      <option value="">Select product...</option>
+                      {products.map((p) => (
+                        <option key={p.id} value={p.id} disabled={p.quantity_in_stock === 0}>
+                          {p.product_name} (${Number(p.price).toFixed(2)}) — Stock: {p.quantity_in_stock}
+                        </option>
+                      ))}
+                    </select>
                   </div>
-                )}
-                <button className="btn-icon" onClick={() => removeItem(idx)} disabled={orderItems.length === 1} style={{ flexShrink: 0 }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M18 6L6 18M6 6l12 12" />
-                  </svg>
-                </button>
+                  <div style={{ width: 100 }}>
+                    <input
+                      type="number"
+                      className={`form-control ${errors[`item_${idx}`] ? 'error' : ''}`}
+                      placeholder="Qty"
+                      min="1"
+                      value={item.quantity}
+                      onChange={(e) => updateItem(idx, 'quantity', e.target.value)}
+                    />
+                  </div>
+                  {item.product_id && item.quantity && (
+                    <div style={{ width: 80, padding: '9px 0', textAlign: 'right', fontWeight: 600, color: 'var(--gray-700)', fontSize: 14 }}>
+                      ${(getUnitPrice(item.product_id) * Number(item.quantity)).toFixed(2)}
+                    </div>
+                  )}
+                  <button className="btn-icon" onClick={() => removeItem(idx)} disabled={orderItems.length === 1} style={{ flexShrink: 0 }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M18 6L6 18M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                {errors[`item_${idx}`] && <p className="error-text" style={{ margin: '0 0 8px 0' }}>{errors[`item_${idx}`]}</p>}
               </div>
             ))}
             {errors.items && <p className="error-text">{errors.items}</p>}
